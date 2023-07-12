@@ -1,0 +1,57 @@
+import requests
+import json
+
+# PagerDuty API configuration
+BASE_URL = "https://api.pagerduty.com"
+API_KEY = "YOUR_API_KEY"  # Replace with your PagerDuty API key
+
+def create_team(name):
+    endpoint = f"{BASE_URL}/teams"
+    headers = {
+        "Authorization": f"Token token={API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "team": {
+            "type": "team",
+            "name": name
+        }
+    }
+    response = requests.post(endpoint, headers=headers, data=json.dumps(data))
+    response.raise_for_status()
+    team_id = response.json()["team"]["id"]
+    return team_id
+
+def create_user(name, email, team_ids):
+    endpoint = f"{BASE_URL}/users"
+    headers = {
+        "Authorization": f"Token token={API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "user": {
+            "type": "user",
+            "name": name,
+            "email": email,
+            "team_ids": team_ids
+        }
+    }
+    response = requests.post(endpoint, headers=headers, data=json.dumps(data))
+    response.raise_for_status()
+    user_id = response.json()["user"]["id"]
+    return user_id
+
+# Provision teams
+team_ids = []
+for i in range(1, 6):
+    team_name = f"Team {i}"
+    team_id = create_team(team_name)
+    team_ids.append(team_id)
+    print(f"Created team: {team_name} (ID: {team_id})")
+
+# Provision users
+for i in range(1, 51):
+    user_name = f"User {i}"
+    user_email = f"user{i}@example.com"
+    user_id = create_user(user_name, user_email, team_ids)
+    print(f"Created user: {user_name} (ID: {user_id})")
